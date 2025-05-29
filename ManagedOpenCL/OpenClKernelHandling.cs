@@ -641,6 +641,14 @@ namespace ManagedOpenCL
 					{
 						values.Add((float) numericUpDown.Value);
 					}
+					if (type == typeof(decimal))
+					{
+						values.Add((decimal) numericUpDown.Value);
+					}
+					if (type == typeof(double))
+					{
+						values.Add((double) numericUpDown.Value);
+					}
 				}
 				else if (control is TextBox textBox)
 				{
@@ -836,6 +844,16 @@ namespace ManagedOpenCL
 					((NumericUpDown) inputControl).Value = 0.5M;
 					// ((NumericUpDown) inputControl).ValueChanged += (s, e) => { this.Log("Value changed: " + ((NumericUpDown) s).Value); };
 				}
+				else if (argType == typeof(decimal))
+				{
+					inputControl = new NumericUpDown();
+					((NumericUpDown) inputControl).Minimum = decimal.MinValue;
+					((NumericUpDown) inputControl).Maximum = decimal.MaxValue;
+					((NumericUpDown) inputControl).DecimalPlaces = 7;
+					((NumericUpDown) inputControl).Increment = 0.0005M;
+					((NumericUpDown) inputControl).Value = 0.5M;
+					// ((NumericUpDown) inputControl).ValueChanged += (s, e) => { this.Log("Value changed: " + ((NumericUpDown) s).Value); };
+				}
 				else if (argType == typeof(double))
 				{
 					inputControl = new NumericUpDown();
@@ -843,7 +861,14 @@ namespace ManagedOpenCL
 					((NumericUpDown) inputControl).Maximum = decimal.MaxValue;
 					((NumericUpDown) inputControl).DecimalPlaces = 10;
 					((NumericUpDown) inputControl).Increment = 0.00001M;
+					((NumericUpDown) inputControl).Value = 1.0M;
 					// ((NumericUpDown) inputControl).ValueChanged += (s, e) => { this.Log("Value changed: " + ((NumericUpDown) s).Value); };
+
+					// Special case offsets: 0.0M
+					if (argName.ToLower().Contains("offset") || argName.ToLower().Contains("shift") || argName.ToLower().Contains("delta"))
+					{
+						((NumericUpDown) inputControl).Value = 0.0M;
+					}
 				}
 				else if (argType == typeof(string))
 				{
@@ -928,7 +953,7 @@ namespace ManagedOpenCL
 					// Create label
 					Label colorLabel = new();
 					colorLabel.Name = "label_color_" + colorButtons.Count;
-					colorLabel.Text = string.Join(", ", colorLabels.Select(l => "'" + l.Text + "'"));
+					colorLabel.Text = "Color '" + colorLabels.FirstOrDefault()?.Text.Substring(0, (colorLabels.FirstOrDefault()?.Text.Length ?? 0) - 1) + "'";
 					colorLabel.Location = new Point(10, offset);
 					colorLabel.AutoSize = true;
 
@@ -936,7 +961,8 @@ namespace ManagedOpenCL
 					Button colorButton = new();
 					colorButton.Name = "argInputColor_" + colorInputs.Count;
 					colorButton.Text = "Pick color";
-					colorButton.BackColor = Color.White;
+					colorButton.BackColor = Color.Black;
+					colorButton.ForeColor = Color.White; // Default text color	
 					colorButton.Size = new Size(120, 23);
 
 					// Location with padding
@@ -1049,10 +1075,10 @@ namespace ManagedOpenCL
 
 
 		// Load
-		public void LoadKernel(string kernelName = "", string filePath = "", Panel? inputPanel = null, bool showInvariables = true)
+		public CLKernel? LoadKernel(string kernelName = "", string filePath = "", Panel? inputPanel = null, bool showInvariables = true)
 		{
 			// Verify panel
-			inputPanel ??= this.InputPanel;
+			inputPanel ??= this.InputPanel ?? new Panel();
 
 			// Get kernel file path
 			if (!string.IsNullOrEmpty(filePath))
@@ -1068,19 +1094,17 @@ namespace ManagedOpenCL
 			if (this.Kernel != null && this.KernelFile == filePath)
 			{
 				this.Log("Kernel already loaded: " + kernelName, "", 1);
-				return;
+				return this.Kernel;
 			}
 
-			this.Kernel = this.CompileFile(filePath);
+			CLKernel? kernel = this.Kernel = this.CompileFile(filePath);
 			this.KernelFile = filePath;
-
-
 
 			// Check if kernel is null
 			if (this.Kernel == null)
 			{
 				this.Log("Kernel is null");
-				return;
+				return null;
 			}
 			else
 			{
@@ -1090,14 +1114,13 @@ namespace ManagedOpenCL
 				this.Log("Kernel arguments: [" + argNamesString + "]", "", 1);
 			}
 
-			// Set file
-			this.KernelFile = filePath;
-
 			// TryAdd to cached
 			this.kernelCache.TryAdd(this.Kernel.Value, filePath);
 
 			// Build input panel
-			this.BuildInputPanel(inputPanel ?? new Panel(), showInvariables);
+			this.BuildInputPanel(inputPanel, showInvariables);
+
+			return kernel;
 		}
 
 		public void UnloadKernel()
@@ -1625,7 +1648,7 @@ namespace ManagedOpenCL
 			for (int i = 0; i < inputMem.Count; i++)
 			{
 				CLBuffer inputBuffer = inputBuffers[i];
-				CLBuffer outputBuffer = outputBuffers.Length > i ? outputBuffers[i] : inputBuffer; // Use input buffer if no output buffer
+				CLBuffer outputBuffer = outputBuffers.Length > i ? outputBuffers[i] : inputBuffers[i]; // Use input buffer if no output buffer
 
 				// Merge arguments
 				List<object> arguments = this.MergeArgumentsAudio(variableArguments ?? this.GetArgumentValues(), inputBuffer, outputBuffer, chunkSize, outputLength, false);
@@ -1933,7 +1956,7 @@ namespace ManagedOpenCL
 					}
 					else
 					{
-						result.Add((int) arguments[i]);
+						result.Add((int) arguments[Math.Min(arguments.Length - 1, i)]);
 					}
 				}
 				else if (argType == typeof(float))
@@ -1943,7 +1966,7 @@ namespace ManagedOpenCL
 				}
 				else if (argType == typeof(double))
 				{
-					result.Add((double) arguments[i]);
+					result.Add(Convert.ToDouble(arguments[i]));
 				}
 				else if (argType == typeof(long))
 				{
@@ -2014,20 +2037,60 @@ namespace ManagedOpenCL
 				}
 				else if (argType == typeof(int))
 				{
-					result.Add((int) arguments[i]);
+					// If name is "length" -> add length
+					if (argName.ToLower() == "inputlen")
+					{
+						result.Add((int)length != (int)IntPtr.Zero ? (int)length : (int)IntPtr.Zero);
+						if (log)
+						{
+							this.Log("Kernel argument length found: " + length.ToString(), "Index: " + i, 3);
+						}
+					}
+					else if (argName.ToLower() == "outputlen")
+					{
+						result.Add((int)outputLength != (int)IntPtr.Zero ? (int)outputLength : (int)IntPtr.Zero);
+						if (log)
+						{
+							this.Log("Kernel argument output length found: " + outputLength.ToString(), "Index: " + i, 3);
+						}
+					}
+					else
+					{
+						result.Add((int) arguments[i]);
+					}
 				}
 				else if (argType == typeof(float))
 				{
 					// Sicher konvertieren
-					result.Add(Convert.ToSingle(arguments[i]));
+					result.Add(Convert.ToSingle(arguments[Math.Min(arguments.Length - 1, i)]));
 				}
 				else if (argType == typeof(double))
 				{
-					result.Add((double) arguments[i]);
+					result.Add(Convert.ToDouble(arguments[i]));
 				}
 				else if (argType == typeof(long))
 				{
-					result.Add((long) arguments[i]);
+					// If name is "length" -> add length
+					if (argName.ToLower() == "inputlen")
+					{
+						result.Add((long) length != (long) IntPtr.Zero ? (long) length : (long) IntPtr.Zero);
+						if (log)
+						{
+							this.Log("Kernel argument length found: " + length.ToString(), "Index: " + i, 3);
+						}
+					}
+					else if (argName.ToLower() == "outputlen")
+					{
+						result.Add((long) outputLength != (long) IntPtr.Zero ? (long) outputLength : (long) IntPtr.Zero);
+						if (log)
+						{
+							this.Log("Kernel argument output length found: " + outputLength.ToString(), "Index: " + i, 3);
+						}
+					}
+					else
+					{
+						result.Add((long) arguments[i]);
+					}
 				}
 				else if (argType == typeof(IntPtr))
 				{
@@ -2040,7 +2103,7 @@ namespace ManagedOpenCL
 							this.Log("Kernel argument length found: " + length.ToString(), "Index: " + i, 3);
 						}
 					}
-					if (argName.ToLower() == "outputlen")
+					else if (argName.ToLower() == "outputlen")
 					{
 						result.Add(outputLength != IntPtr.Zero ? outputLength : IntPtr.Zero);
 						if (log)
@@ -2307,7 +2370,7 @@ namespace ManagedOpenCL
 				{
 					this.Log("Couldn't get output pointer after kernel execution", "Aborting", 1);
 				}
-				return outputPointer;
+				return obj.Pointer;
 			}
 			
 			// Set obj pointer

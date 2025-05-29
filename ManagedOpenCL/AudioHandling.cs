@@ -323,6 +323,24 @@ namespace ManagedOpenCL
 			return obj;
 		}
 
+		public static AudioObject PopEmpty(long length, float value = 0.0f, int samplerate = 44100, int channels = 1, int bitdepth = 16)
+		{
+			float[] data = new float[length];
+			Array.Fill(data, value);
+
+			Random rand = new Random();
+			int number = rand.Next(1000, 9999);
+
+			AudioObject obj = new(data, samplerate, channels, bitdepth, number);
+
+			obj.Samplerate = samplerate;
+			obj.Channels = channels;
+			obj.Bitdepth = bitdepth;
+			obj.Length = length;
+
+			return obj;
+		}
+
 		public void LoadResourcesAudios()
 		{
 			// Get all ,mp3 and .wav files in the resources directory

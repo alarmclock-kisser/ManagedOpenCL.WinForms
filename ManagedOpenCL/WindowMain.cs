@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Windows.Forms.VisualStyles;
 
 namespace ManagedOpenCL
@@ -30,6 +31,10 @@ namespace ManagedOpenCL
 		public WindowMain()
 		{
 			this.InitializeComponent();
+
+			// Window position
+			this.StartPosition = FormStartPosition.Manual;
+			this.Location = new Point(100, 0);
 
 			// Initialize the OpenCL service
 			this.Service = new OpenClService(this.Repopath, this.listBox_log, this.comboBox_devices);
@@ -422,6 +427,7 @@ namespace ManagedOpenCL
 				if (moved)
 				{
 					this.MoveImage(index);
+					this.IMGH.FitZoom();
 				}
 
 				// Refresh image view
@@ -494,7 +500,7 @@ namespace ManagedOpenCL
 			float factor = (float) this.numericUpDown_test_stretchFactor.Value;
 
 			// Execute the kernel on the audio track
-			track.Pointer = this.Service.KernelHandling.ExecuteKernelGenericAudioChunks(track, kernelVersion, kernelName, track.ChunkSize, factor, null, false);
+			track.Pointer = this.Service.KernelHandling.ExecKernelAudio(track, kernelName, kernelVersion, track.ChunkSize, (float) (track.ChunkSize / track.OverlapSize), factor, null, true);
 			if (track.Pointer == IntPtr.Zero)
 			{
 				MessageBox.Show("Failed to execute kernel on audio track.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -668,27 +674,18 @@ namespace ManagedOpenCL
 
 		private void button_normalize_Click(object sender, EventArgs e)
 		{
-			this.AUDH.CurrentTrack?.Normalize();
+			float normalizeValue = (float) this.numericUpDown_normalizeValue.Value;
+
+			this.AUDH.CurrentTrack?.Normalize(normalizeValue);
 
 			this.AUDH.RefreshView();
 		}
 
 		private void button_test_stretch_Click(object sender, EventArgs e)
 		{
-			// this.PerformStretch(this.listBox_audios.SelectedIndex, "01", "stretch");
+			this.PerformStretch(this.listBox_audios.SelectedIndex, "01", "stretch");
 
-			AudioObject? obj = this.AUDH.CurrentTrack;
-			if (obj == null)
-			{
-				MessageBox.Show("No audio track currently selected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				return;
-			}
-
-			float factor = (float) this.numericUpDown_test_stretchFactor.Value;
-			int chunkSize = (int) this.numericUpDown_chunkSize.Value;
-			float overlap = (float) this.numericUpDown_overlap.Value;
-
-			this.Service.KernelHandling?.ExecKernelAudio(obj, this.comboBox_kernelName.SelectedItem?.ToString() ?? "stretch", this.comboBox_kernelVersion.SelectedItem?.ToString() ?? "01", chunkSize, overlap, factor, null, true);
+			this.AUDH.RefreshView();
 		}
 	}
 }

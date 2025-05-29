@@ -70,6 +70,7 @@
 			this.button_normalize = new Button();
 			this.button_test_stretch = new Button();
 			this.numericUpDown_test_stretchFactor = new NumericUpDown();
+			this.numericUpDown_normalizeValue = new NumericUpDown();
 			this.panel_view.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize) this.pictureBox_view).BeginInit();
 			((System.ComponentModel.ISupportInitialize) this.pictureBox_waveform).BeginInit();
@@ -78,6 +79,7 @@
 			((System.ComponentModel.ISupportInitialize) this.numericUpDown_chunkSize).BeginInit();
 			((System.ComponentModel.ISupportInitialize) this.numericUpDown_overlap).BeginInit();
 			((System.ComponentModel.ISupportInitialize) this.numericUpDown_test_stretchFactor).BeginInit();
+			((System.ComponentModel.ISupportInitialize) this.numericUpDown_normalizeValue).BeginInit();
 			this.SuspendLayout();
 			// 
 			// listBox_log
@@ -477,11 +479,23 @@
 			this.numericUpDown_test_stretchFactor.TabIndex = 42;
 			this.numericUpDown_test_stretchFactor.Value = new decimal(new int[] { 1, 0, 0, 0 });
 			// 
+			// numericUpDown_normalizeValue
+			// 
+			this.numericUpDown_normalizeValue.DecimalPlaces = 3;
+			this.numericUpDown_normalizeValue.Increment = new decimal(new int[] { 5, 0, 0, 131072 });
+			this.numericUpDown_normalizeValue.Location = new Point(1640, 582);
+			this.numericUpDown_normalizeValue.Maximum = new decimal(new int[] { 5, 0, 0, 0 });
+			this.numericUpDown_normalizeValue.Name = "numericUpDown_normalizeValue";
+			this.numericUpDown_normalizeValue.Size = new Size(55, 23);
+			this.numericUpDown_normalizeValue.TabIndex = 43;
+			this.numericUpDown_normalizeValue.Value = new decimal(new int[] { 1, 0, 0, 0 });
+			// 
 			// WindowMain
 			// 
 			this.AutoScaleDimensions = new SizeF(7F, 15F);
 			this.AutoScaleMode = AutoScaleMode.Font;
 			this.ClientSize = new Size(1904, 821);
+			this.Controls.Add(this.numericUpDown_normalizeValue);
 			this.Controls.Add(this.numericUpDown_test_stretchFactor);
 			this.Controls.Add(this.button_test_stretch);
 			this.Controls.Add(this.button_normalize);
@@ -535,6 +549,7 @@
 			((System.ComponentModel.ISupportInitialize) this.numericUpDown_chunkSize).EndInit();
 			((System.ComponentModel.ISupportInitialize) this.numericUpDown_overlap).EndInit();
 			((System.ComponentModel.ISupportInitialize) this.numericUpDown_test_stretchFactor).EndInit();
+			((System.ComponentModel.ISupportInitialize) this.numericUpDown_normalizeValue).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 		}
@@ -583,5 +598,6 @@
 		private Button button_normalize;
 		private Button button_test_stretch;
 		private NumericUpDown numericUpDown_test_stretchFactor;
+		private NumericUpDown numericUpDown_normalizeValue;
 	}
 }

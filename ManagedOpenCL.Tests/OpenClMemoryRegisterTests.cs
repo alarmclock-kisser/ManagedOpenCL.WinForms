@@ -98,8 +98,8 @@ namespace ManagedOpenCL.Tests
 			IntPtr result = this.MemoryRegister?.PushImage(obj) ?? IntPtr.Zero;
 
 			// Assert
-			Assert.IsTrue(result != IntPtr.Zero, "IntPtr should not be zero after pushinhg image");
-			Assert.AreEqual(result, obj.Pointer, "IntPtr should be equal to obj.Pointer");
+			Assert.IsTrue(result != IntPtr.Zero, "IntPtr should not be zero after pushinhg image.");
+			Assert.AreEqual(result, obj.Pointer, "IntPtr should be equal to pointer of object.");
 		}
 
 		[TestMethod]
@@ -112,10 +112,10 @@ namespace ManagedOpenCL.Tests
 			IntPtr result = this.MemoryRegister?.PushAudio(obj) ?? IntPtr.Zero;
 
 			// Assert
-			Assert.IsTrue(result != IntPtr.Zero, "IntPtr should not be zero after pushing track");
-			Assert.AreEqual(result, obj.Pointer, "IntPtr should be equal to obj.Pointer");
-			Assert.IsTrue(obj.ChunkSize == 0, "Obj ChunkSize should be 0 after pushing with no chunking");
-			Assert.IsTrue(obj.OverlapSize == 0, "Obj OverlapSize should be 0 after pushing with no chunking");
+			Assert.IsTrue(result != IntPtr.Zero, "IntPtr should not be zero after pushing track.");
+			Assert.AreEqual(result, obj.Pointer, "IntPtr should be equal to pointer of object.");
+			Assert.IsTrue(obj.ChunkSize == 0, "Object ChunkSize should be 0 after pushing with no chunking.");
+			Assert.IsTrue(obj.OverlapSize == 0, "Object OverlapSize should be 0 after pushing with no chunking.");
 		}
 		
 		[TestMethod]
@@ -131,10 +131,10 @@ namespace ManagedOpenCL.Tests
 			IntPtr result = this.MemoryRegister?.PushAudio(obj, chunkSize, overlap) ?? IntPtr.Zero;
 
 			// Assert
-			Assert.IsTrue(result != IntPtr.Zero, "IntPtr should not be zero after pushing track");
-			Assert.AreEqual(result, obj.Pointer, "IntPtr should be equal to obj.Pointer");
-			Assert.IsTrue(obj.ChunkSize == chunkSize, $"Obj ChunkSize should be {chunkSize} after pushing with chunking");
-			Assert.IsTrue(obj.OverlapSize == overlapSize, $"Obj OverlapSize should be {overlapSize} after pushing with chunking");
+			Assert.IsTrue(result != IntPtr.Zero, "IntPtr should not be zero after pushing track.");
+			Assert.AreEqual(result, obj.Pointer, "IntPtr should be equal to pointer of object.");
+			Assert.IsTrue(obj.ChunkSize == chunkSize, $"Object ChunkSize should be {chunkSize} after pushing with chunking.");
+			Assert.IsTrue(obj.OverlapSize == overlapSize, $"Object OverlapSize should be {overlapSize} after pushing with chunking.");
 		}
 	}
 }

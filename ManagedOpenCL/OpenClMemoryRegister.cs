@@ -93,7 +93,7 @@ namespace ManagedOpenCL
 			if (mem == null)
 			{
 				// If no buffer found, return 0
-				this.Log("No buffer found to free", pointer.ToString("X16"));
+				// this.Log("No buffer found to free", pointer.ToString("X16"));
 				return 0;
 			}
 

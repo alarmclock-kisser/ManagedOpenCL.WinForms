@@ -557,6 +557,32 @@ namespace ManagedOpenCL
             return imgObj;
 		}
 
+        public static ImageObject PopEmpty(Color? color = null, Size? size = null, string name = "")
+        {
+			// Verify color & size
+			color ??= Color.Transparent;
+			size ??= new Size(512, 512);
+
+			// Generate name
+			if (string.IsNullOrEmpty(name))
+			{
+                Random rand = new Random();
+				name = "Image_" + (rand.Next()).ToString("00");
+			}
+
+			// Create bitmap with size and color
+			Bitmap bitmap = new(size.Value.Width, size.Value.Height, PixelFormat.Format32bppArgb);
+			using (Graphics g = Graphics.FromImage(bitmap))
+			{
+				g.Clear(color.Value);
+			}
+
+			// Create new ImageObject
+			ImageObject imgObj = new(bitmap, name);
+
+            return imgObj;
+		}
+
 		public ImageObject? Clone(int index = -1)
         {
             // Get index if -1

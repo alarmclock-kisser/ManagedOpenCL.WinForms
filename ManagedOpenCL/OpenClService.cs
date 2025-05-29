@@ -516,7 +516,7 @@ namespace ManagedOpenCL
 			if (index >= 0)
 			{
 				this.DevicesCombo.SelectedIndex = index;
-				// this.InitContext(index);
+				this.InitContext(index);
 			}
 			else
 			{
